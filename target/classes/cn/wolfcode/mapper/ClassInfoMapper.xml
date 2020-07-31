@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.mapper.ClassInfoMapper" >
+  <resultMap id="BaseResultMap" type="cn.wolfcode.domain.ClassInfo" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="number" property="number" jdbcType="INTEGER" />
+    <result column="employee_id" property="employeeId" jdbcType="BIGINT" />
+
+    <result column="e_name" property="employee.name"/>
+    <result column="e_id" property="employee.id"/>
+
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from classinfo
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="cn.wolfcode.domain.ClassInfo" useGeneratedKeys="true" keyProperty="id" >
+    insert into classinfo (name, number, employee_id
+      )
+    values (#{name,jdbcType=VARCHAR}, #{number,jdbcType=INTEGER}, #{employee.id,jdbcType=BIGINT}
+      )
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="cn.wolfcode.domain.ClassInfo" >
+    update classinfo
+    set name = #{name,jdbcType=VARCHAR},
+      number = #{number,jdbcType=INTEGER},
+      employee_id = #{employeeId,jdbcType=BIGINT}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select id, name, number, employee_id
+    from classinfo
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+
+  <sql id="where_keyword">
+    <where>
+      <if test="keyword != null and keyword !=''">
+        AND (ci.name like concat('%',#{keyword},'%'))
+      </if>
+      <if test="deptId > 0 and deptId != null">
+        AND e.id=#{deptId}
+      </if>
+    </where>
+  </sql>
+
+
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, name, number, employee_id
+    from classinfo
+  </select>
+
+    <select id="selectForList" resultMap="BaseResultMap">
+      select ci.id, ci.name, ci.number, ci.employee_id,
+        e.id as e_id, e.name as e_name
+      from classinfo ci
+      LEFT JOIN employee e ON e.id=ci.employee_id
+      <include refid="where_keyword"/>
+    </select>
+</mapper>

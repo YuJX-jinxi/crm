@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.mapper.CustomerTransferMapper" >
+  <resultMap id="BaseResultMap" type="cn.wolfcode.domain.CustomerTransfer" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="operate_time" property="operateTime" jdbcType="TIMESTAMP" />
+    <result column="reason" property="reason" jdbcType="VARCHAR" />
+
+    <association property="customer" javaType="cn.wolfcode.domain.Customer" columnPrefix="c_">
+      <result column="id" property="id"/>
+      <result column="name" property="name"/>
+    </association>
+    <association property="operator" javaType="cn.wolfcode.domain.Employee" columnPrefix="e_">
+      <result column="id" property="id"/>
+      <result column="name" property="name"/>
+    </association>
+    <association property="oldSeller" javaType="cn.wolfcode.domain.Employee" columnPrefix="em_">
+      <result column="id" property="id"/>
+      <result column="name" property="name"/>
+    </association>
+    <association property="newSeller" javaType="cn.wolfcode.domain.Employee" columnPrefix="emp_">
+      <result column="id" property="id"/>
+      <result column="name" property="name"/>
+    </association>
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from customertransfer
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="cn.wolfcode.domain.CustomerTransfer" useGeneratedKeys="true" keyProperty="id" >
+    insert into customertransfer (customer_id, operator_id, operate_time, 
+      old_seller_id, new_seller_id, reason
+      )
+    values (#{customer.id,jdbcType=BIGINT}, #{operator.id,jdbcType=BIGINT}, #{operateTime,jdbcType=TIMESTAMP},
+      #{oldSeller.id,jdbcType=BIGINT}, #{newSeller.id,jdbcType=BIGINT}, #{reason,jdbcType=VARCHAR}
+      )
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="cn.wolfcode.domain.CustomerTransfer" >
+    update customertransfer
+    set customer_id = #{customer.id,jdbcType=BIGINT},
+      operator_id = #{operator.id,jdbcType=BIGINT},
+      operate_time = #{operateTime,jdbcType=TIMESTAMP},
+      old_seller_id = #{oldSeller.id,jdbcType=BIGINT},
+      new_seller_id = #{newSeller.id,jdbcType=BIGINT},
+      reason = #{reason,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select id, customer_id, operator_id, operate_time, old_seller_id, new_seller_id, 
+    reason
+    from customertransfer
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, customer_id, operator_id, operate_time, old_seller_id, new_seller_id, 
+    reason
+    from customertransfer
+  </select>
+  <select id="selectForList" resultMap="BaseResultMap">
+    SELECT
+      ct.id,
+      ct.operator_id,
+      ct.operate_time,
+      ct.old_seller_id,
+      ct.new_seller_id,
+      ct.reason,
+      c.id as c_id,
+      c.name as c_name,
+      e.id as e_id,
+      e.name as e_name,
+      em.id as em_id,
+      em.name as em_name,
+      emp.id as emp_id,
+      emp.name as emp_name
+    FROM
+      customertransfer ct
+      LEFT JOIN customer c on c.id=ct.customer_id
+      LEFT JOIN employee e ON e.id=ct.operator_id
+      LEFT JOIN employee em ON em.id=ct.old_seller_id
+      LEFT JOIN employee emp ON emp.id=ct.new_seller_id
+    <where>
+      <if test="keyword!= null">
+        and c.name like concat('%',#{keyword},'%')
+      </if>
+    </where>
+  </select>
+</mapper>

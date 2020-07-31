@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx" xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd  http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+        <!-- 关联 db.properties 文件 -->
+    <context:property-placeholder location="classpath:db.properties"/>
+
+    <!-- 配置 DataSource 连接德鲁伊的对象-->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
+        <property name="driverClassName" value="${jdbc.driverClassName}"/>
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+    </bean>
+
+    <!-- 配置 SqlSessionFactory -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!-- 关联 MyBatis 主配置文件-->
+        <property name="configLocation" value="classpath:mybatis-config.xml"/>
+        <!-- 拿到账号密码,连接了数据库,才可以操作数据库 -->
+        <property name="dataSource" ref="dataSource"/>
+
+        <!-- 配置别名 -->
+        <property name="typeAliasesPackage" value="cn.wolfcode.domain"/>
+    </bean>
+
+    <!-- 批量配置 Mapper 对象 是针对标签的类的 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!-- 指定 Mapper 接口所在的包 -->
+        <property name="basePackage" value="cn.wolfcode.mapper"/>
+    </bean>
+
+    <!-- 配置 业务层(Service)的实现类 对象 IoC DI 注解解析器 实现类所贴的标签-->
+    <context:component-scan base-package="cn.wolfcode.service.impl"/>
+
+
+    <!-- 配置一个事务管理器 WHAT 做什么 -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <!-- 配置增强 包含 WHEN 什么时候 WHAT 做什么-->
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="get*" read-only="true"/>
+            <tx:method name="select*" read-only="true"/>
+            <tx:method name="query*" read-only="true"/>
+            <tx:method name="list*" read-only="true"/>
+            <tx:method name="count*" read-only="true"/>
+            <tx:method name="*"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <!-- 配置 AOP  即是回滚事务-->
+    <aop:config >
+        <!-- 定义切入点 WHERE-->
+        <aop:pointcut id="txPointcut" expression="execution(* cn.wolfcode.service.impl.*ServiceImpl.*(..))"/>
+        <!-- 关联 WHERE 与 增强-->
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="txPointcut"/>
+    </aop:config>
+</beans>

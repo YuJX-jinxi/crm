@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.wolfcode.mapper.EmployeeMapper">
+  <resultMap id="BaseResultMap" type="cn.wolfcode.domain.Employee">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="password" jdbcType="VARCHAR" property="password" />
+    <result column="email" jdbcType="VARCHAR" property="email" />
+    <result column="age" jdbcType="INTEGER" property="age" />
+    <result column="admin" jdbcType="BIT" property="admin" />
+    <result column="status" jdbcType="BIT" property="status" />
+    <result column="dept_id" property="deptId"/>
+    <result column="d_id" property="dept.id" />
+    <result column="d_name" property="dept.name" />
+    <result column="d_sn" property="dept.sn" />
+
+    <!-- 封装角色集合 property 实体类中的属性名,ofType 代表 (集合/泛型)中的元素类型  -->
+    <collection property="roles"  ofType="cn.wolfcode.domain.Role" columnPrefix="r_">
+      <result column="id" property="id"/>
+      <result column="name" property="name"/>
+    </collection>
+  </resultMap>
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from employee
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+
+  <!--对于中间表之前存在的关系删除-->
+  <delete id="deleteRelation">
+      DELETE  from employee_role where employee_id=#{eid}
+  </delete>
+
+  <delete id="batchDelete">
+    DELETE  from employee where id in
+    <foreach collection="array" item="item" open="(" close=")" separator=",">
+      #{item}
+    </foreach>
+  </delete>
+
+  <insert id="insert" keyProperty="id" parameterType="cn.wolfcode.domain.Employee" useGeneratedKeys="true">
+    insert into employee (name, password, email,
+      age, admin, dept_id)
+    values (#{name,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR}, #{email,jdbcType=VARCHAR},
+      #{age,jdbcType=INTEGER}, #{admin,jdbcType=BIT}, #{dept.id,jdbcType=BIGINT})
+  </insert>
+<!-- 对于角色的保存-->
+  <insert id="insertRelation">
+    insert into employee_role(employee_id,role_id) values (#{employeeId},#{roleId})
+  </insert>
+
+  <update id="updateByPrimaryKey" parameterType="cn.wolfcode.domain.Employee">
+    update employee
+    set name=#{name,jdbcType=VARCHAR},
+      email = #{email,jdbcType=VARCHAR},
+      age = #{age,jdbcType=INTEGER},
+      admin = #{admin,jdbcType=BIT},
+      dept_id = #{dept.id,jdbcType=BIGINT}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+  <update id="updatePwd">
+    update employee
+    set password = #{password}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+
+  <update id="setStatus">
+    update employee
+    set status = #{status,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+
+
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    SELECT
+      e.id,
+      e.name,
+      e.age,
+      e.email,
+      e.admin,
+      e.status,
+      d.id AS d_id,
+      d.name AS d_name,
+      d.sn AS d_sn,
+      r.id AS r_id,
+      r.name AS r_name
+    FROM employee e
+      LEFT JOIN department d ON e.dept_id = d.id
+      LEFT JOIN employee_role er ON e.id = er.employee_id
+      LEFT JOIN role r ON er.role_id = r.id
+    WHERE e.id = #{id}
+  </select>
+
+  <select id="selectAll" resultMap="BaseResultMap">
+    select id, name, password, email, age, admin, dept_id
+    from employee
+  </select>
+
+  <sql id="where_sql">
+    <where>
+      <if test="keyword != null and keyword !=''">
+        AND (e.name like concat('%',#{keyword},'%')OR e.email like concat('%',#{keyword},'%'))
+      </if>
+      <if test="deptId > 0 and deptId != null">
+        AND e.dept_id=#{deptId}
+      </if>
+    </where>
+  </sql>
+
+    <!--<select id="selectForCount" resultType="java.lang.Integer">
+      select COUNT(*)
+      FROM employee e
+      <include refid="where_sql"/>
+    </select>-->
+
+  <select id="selectForList" resultMap="BaseResultMap">
+    SELECT  e.id,e.name,e.password,e.age,e.email,e.status,e.admin,e.dept_id,
+      d.id AS d_id,d.name AS d_name, d.sn AS d_sn
+    FROM employee e
+    LEFT JOIN department d ON e.dept_id=d.id
+    <include refid="where_sql"/>
+    <!--LIMIT #{start},#{pageSize}-->
+  </select>
+
+  <!--<resultMap id="User" type="cn.wolfcode.domain.Employee">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="password" jdbcType="VARCHAR" property="password" />
+    <result column="email" jdbcType="VARCHAR" property="email" />
+    <result column="age" jdbcType="INTEGER" property="age" />
+    <result column="admin" jdbcType="BIT" property="admin" />
+    <result column="status" jdbcType="BIT" property="status" />
+
+    <collection property="dept"  ofType="cn.wolfcode.domain.Department">
+      <result column="dept_id" property="id"/>
+    </collection>
+  </resultMap>-->
+
+
+  <select id="selectByUsernameAndPassword"  resultMap="BaseResultMap">
+    select id, name, password, email, age, admin,status,dept_id AS d_id
+    from employee
+    where  name=#{username} and password=#{password}
+  </select>
+
+  <select id="selectByName" resultMap="BaseResultMap">
+    select e.id, e.name, e.password,e.email, e.age, e.admin,e.status,e.dept_id,d.id as d_id
+    from employee e
+      JOIN department d ON e.dept_id=d.id
+    where  e.name=#{name}
+  </select>
+
+  <select id="selectByRoleSn" resultMap="BaseResultMap">
+    SELECT DISTINCT
+      e. NAME,
+      e.id
+    FROM
+      employee e
+      JOIN employee_role er ON e.id = er.employee_id
+      JOIN role r ON er.role_id = r.id
+    WHERE
+      r.sn IN 
+    <foreach collection="array" open="(" separator="," close=")" item="item">
+      #{item}
+    </foreach>
+  </select>
+
+</mapper>

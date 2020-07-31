@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>叩丁狼客户关系管理系统-登录</title>
+    <link rel="stylesheet" href="/js/bootstrap/css/bootstrap.css">
+    <link rel="stylesheet" href="/js/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/js/Ionicons/css/ionicons.min.css">
+    <link rel="stylesheet" href="/js/adminlte/css/AdminLTE.min.css">
+    <link rel="stylesheet" href="/js/adminlte/css/skins/_all-skins.min.css">
+    <link rel="stylesheet" href="/js/adminlte/css/fonts.googleapis.com.css">
+
+    <script src="/js/jquery/jquery.min.js"></script>
+    <script src="/js/bootstrap/js/bootstrap.js"></script>
+    <script src="/js/adminlte/js/adminlte.min.js"></script>
+    <script src="/js/plugins/twbsPagination/jquery.twbsPagination.min.js"></script>
+    <script src="/js/plugins/messager/jquery.bootstrap.min.js"></script>
+    <script src="/js/js/plugins/jquery-form/jquery.form.js"></script>
+
+    <script>
+        $(function () {
+            $(".submitBtn").click(function () {
+                //方法二:表单序列化,把表单内的控件 (input select textarea)有name的控件以及对应的值 使用 key=value的形式拼接在一起
+               /* var param=$("#loginForm").serialize();                // param="username=admin&password=1"
+                //   debugger  前端网页的 debug
+                console.log(param);
+                //提交异步请求
+                $.post('/login.do',param,function (data) {
+                    //console.log(data);
+                    if (data.success){
+                        window.location.href="/employee/list.do";
+                    } else{
+                        $.messager.popup(data.msg)
+                    }
+                })*/
+
+    //debugger
+               // ajaxSubmit 提交异步的表单,把表单升级为 ajax 异步方式,并马上提交 (针对 按钮 是button使用)
+                //这个  需要在 from 中添加 action="/login.do"属性
+                $('#loginForm').ajaxSubmit(function(data){
+                   if (data.success){
+                       window.location.href="/employee/list.do";
+                   } else{
+                       $.messager.popup(data.msg)
+                   }
+               })
+            })
+        })
+    </script>
+</head>
+<body class="hold-transition login-page">
+<div class="login-box">
+    <div class="login-logo">
+        <a href="http://www.wolfcode.cn"><b>叩丁狼</b>CRM</a>
+    </div>
+    <div class="login-box-body">
+        <p class="login-box-msg">请输入账号密码</p>
+
+        <form method="post" id="loginForm" action="/login.do">
+            <div class="form-group has-feedback">
+                <input type="text" class="form-control" placeholder="请输入账号" name="username" value="admin">
+                <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
+            </div>
+            <div class="form-group has-feedback">
+                <input type="password" class="form-control" placeholder="请输入密码" name="password" value="1">
+                <span class="glyphicon glyphicon-lock form-control-feedback"></span>
+            </div>
+            <div class="row">
+                <div class="col-xs-4">
+                    <!-- 在 html 页面中,里面的from 表单中 button 的type 默认是 submit -->
+                    <button type="button" class="btn btn-primary btn-block btn-flat submitBtn">登录</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

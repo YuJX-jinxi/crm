@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+    <!-- 扫描 shiro 包-->
+    <context:component-scan base-package="cn.wolfcode.shiro"/>
+
+        <!-- 在 xml 中配置 shiroFilter , 好处可以在方法上设置不同类型的属性-->
+        <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+            <property name="securityManager" ref="securityManager"/>
+
+            <!-- 因为它里面有默认的界面 (login.jsp),那么就要
+                  重新只等登陆页面的地址-->
+            <property name="loginUrl" value="/login.html"/>
+
+            <!-- 路径到的规则 (那些是需要登录才可以访问,那些是不需要登录才访问)-->
+            <property name="filterChainDefinitions">
+                <value>
+                    /login.do=anon
+                    /logout.do=logout
+                    /js/**=anon
+                    /css/**=anon
+                    /**=authc
+                </value>
+            </property>
+        </bean>
+
+        <!-- web环境使用的安全管理器-->
+        <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+            <!-- 配置自定义的数据源 -->
+                <property name="realm" ref="myRealm"/>
+            
+            <!-- 缓存管理器 -->
+            <property name="cacheManager" ref="cacheManager"/>
+        </bean>
+
+        <!-- 开启 shiro 的注解扫描器   这个控制器,底层是用 aop的方式 来操作的
+             在类中扫描你的类,扫描到 shiro 提供的注解后,会对该类进行 cglib 方式来进行代理,利用代理的方式实现权限拦截的功能
+        -->
+        <bean class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
+            <property name="securityManager" ref="securityManager"/>
+        </bean>
+
+        <!--指定当前需要使用的凭证匹配器-->
+        <bean class="org.apache.shiro.authc.credential.HashedCredentialsMatcher">
+            <!-- 指定加密算法 -->
+            <property name="hashAlgorithmName" value="MD5"/>
+            <!-- 加密次数 -->
+            <property name="hashIterations" value="2"/>
+        </bean>
+
+
+    <!-- 缓存管理器 -->
+    <bean id="cacheManager" class="org.apache.shiro.cache.ehcache.EhCacheManager">
+        <!-- 设置配置文件 -->
+        <property name="cacheManagerConfigFile" value="classpath:shiro-ehcache.xml"/>
+    </bean>
+</beans>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<!-- 拦截的是 sql 语句 , 对 sql 语句进行加工 -->
+	<plugins>
+		<!-- com.github.pagehelper 为 PageHelper 类所在包名 -->
+		<plugin interceptor="com.github.pagehelper.PageInterceptor">
+			<!-- 当 pageNum（当前页） <= 0 时，将 pageNum 设置为 1 -->
+			<!-- 当 pageNum > pages(总页数) 时，将 pageNum 设置为 pages -->
+			<!--合理化分页-->
+			<property name="reasonable" value="true"/>
+		</plugin>
+	</plugins>
+</configuration>

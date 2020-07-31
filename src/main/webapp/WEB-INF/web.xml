@@ -1,0 +1,54 @@
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+         version="3.0">
+
+
+    <!-- 配置 前端控制器 主要的工作就是惊喜分发调度 -->
+    <servlet>
+        <servlet-name>dispatcherServlet</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <init-param>
+            <!-- 启动 Spring 容器 -->
+            <param-name>contextConfigLocation</param-name>
+            <param-value>classpath:mvc.xml</param-value>
+        </init-param>
+        <!-- 提升用户体验度 -->
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <!-- 针对那些请求做操作-->
+    <servlet-mapping>
+        <servlet-name>dispatcherServlet</servlet-name>
+        <url-pattern>*.do</url-pattern>
+    </servlet-mapping>
+    <!-- 编码过滤器 ,针对 POST 提交方法 -->
+    <filter>
+        <filter-name>characterEncodingFilter</filter-name>
+        <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+        <init-param>
+            <!-- 把所有请求都变成这样的编码格式 -->
+            <param-name>encoding</param-name>
+            <param-value>utf-8</param-value>
+        </init-param>
+    </filter>
+
+    <filter-mapping>
+        <!-- 针对那些文件做编码过滤 -->
+        <filter-name>characterEncodingFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <!-- 这是一个代理过滤器 (中间商)拦截到请求后,会自动去 spring 容器里面 找执行业务的过滤器
+          filter-name 里面设置值,作为 bean 的名字去找-->
+    <filter>
+        <filter-name>shiroFilter</filter-name>
+        <!-- DelegatingFilterProxy 这个类是 spring 提供的 -->
+        <filter-class>
+            org.springframework.web.filter.DelegatingFilterProxy
+        </filter-class>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>shiroFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+</web-app>

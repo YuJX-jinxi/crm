@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.mapper.RoleMapper" >
+  <resultMap id="BaseResultMap" type="cn.wolfcode.domain.Role" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="sn" property="sn" jdbcType="VARCHAR" />
+
+    <collection property="permissions" ofType="cn.wolfcode.domain.Permission" columnPrefix="p_">
+      <result column="name" property="name"/>
+      <result column="id" property="id"/>
+    </collection>
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from role
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+
+  <delete id="deleteRelation">
+    DELETE  from role_permission where role_id=#{roleId}
+  </delete>
+
+  <insert id="insert" parameterType="cn.wolfcode.domain.Role" useGeneratedKeys="true" keyProperty="id" >
+    insert into role (name, sn)
+    values (#{name,jdbcType=VARCHAR}, #{sn,jdbcType=VARCHAR})
+  </insert>
+
+    <insert id="insertRelation">
+      INSERT INTO role_permission(role_id,permission_id)VALUES (#{roleId},#{permissionId})
+    </insert>
+
+    <update id="updateByPrimaryKey" parameterType="cn.wolfcode.domain.Role" >
+    update role
+    set name = #{name,jdbcType=VARCHAR},
+      sn = #{sn,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    SELECT
+      r.id,
+      r.NAME,
+      r.sn,p.id AS p_id,p.name AS p_name
+    FROM
+      role r
+      LEFT JOIN role_permission rp ON r.id=rp.role_id
+      LEFT JOIN permission p on rp.permission_id = p.id
+    WHERE
+      r.id =#{id}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, name, sn
+    from role
+  </select>
+    <!--<select id="selectForCount" resultType="java.lang.Integer">
+      select count(*)
+      from role
+    </select>-->
+  <select id="selectForList" resultType="cn.wolfcode.domain.Role">
+    select id, name, sn
+    from role
+    <!--limit #{start},#{pageSize}-->
+  </select>
+
+    <select id="selectSnByEmpId" resultType="java.lang.String">
+      select r.sn from employee_role er join role r on er.role_id=r.id
+      where er.employee_id=#{employeeId}
+    </select>
+</mapper>

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.mapper.CustomerTraceHistoryMapper" >
+  <resultMap id="BaseResultMap" type="cn.wolfcode.domain.CustomerTraceHistory" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="trace_time" property="traceTime" jdbcType="DATE" />
+    <result column="trace_details" property="traceDetails" jdbcType="VARCHAR" />
+    <result column="trace_result" property="traceResult" jdbcType="INTEGER" />
+
+    <association property="customer" javaType="cn.wolfcode.domain.Customer" columnPrefix="c_">
+      <result column="id" property="id"/>
+      <result column="name" property="name"/>
+    </association>
+    <association property="traceType" javaType="cn.wolfcode.domain.SystemDictionaryItem" columnPrefix="s_">
+      <result column="id" property="id"/>
+      <result column="title" property="title"/>
+    </association>
+    <association property="inputUser" javaType="cn.wolfcode.domain.Employee" columnPrefix="e_">
+      <result column="id" property="id"/>
+      <result column="name" property="name"/>
+    </association>
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from customertracehistory
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="cn.wolfcode.domain.CustomerTraceHistory" useGeneratedKeys="true" keyProperty="id" >
+    insert into customertracehistory (trace_time, trace_details, trace_type_id, 
+      trace_result, customer_id, input_user_id
+      )
+    values (#{traceTime,jdbcType=DATE}, #{traceDetails,jdbcType=VARCHAR}, #{traceType.id,jdbcType=BIGINT},
+      #{traceResult,jdbcType=INTEGER}, #{customer.id,jdbcType=BIGINT}, #{inputUser.id,jdbcType=BIGINT}
+      )
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="cn.wolfcode.domain.CustomerTraceHistory" >
+    update customertracehistory
+    set trace_time = #{traceTime,jdbcType=DATE},
+      trace_details = #{traceDetails,jdbcType=VARCHAR},
+      trace_type_id = #{traceType.id,jdbcType=BIGINT},
+      trace_result = #{traceResult,jdbcType=INTEGER},
+      customer_id = #{customer.id,jdbcType=BIGINT},
+      input_user_id = #{inputUser.id,jdbcType=BIGINT}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select id, trace_time, trace_details, trace_type_id, trace_result, customer_id, input_user_id
+    from customertracehistory
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, trace_time, trace_details, trace_type_id, trace_result, customer_id, input_user_id
+    from customertracehistory
+  </select>
+    <select id="selectForList" resultMap="BaseResultMap">
+      SELECT
+        ct.id,
+        ct.trace_time,
+        ct.trace_details,
+        ct.trace_result,
+        ct.input_user_id,
+        c.id as c_id,
+        c.name as c_name,
+        s.id as s_id,
+        s.title as s_title,
+        e.id as e_id,
+        e.name as e_name
+      FROM
+        customertracehistory ct
+        LEFT JOIN customer c ON c.id = ct.customer_id
+        LEFT JOIN systemdictionaryitem s on ct.trace_type_id=s.id
+        LEFT JOIN employee e on e.id=ct.input_user_id
+        <where>
+          <if test="keyword!= null">
+            and c.name like concat('%',#{keyword},'%')
+          </if>
+        </where>
+    </select>
+</mapper>
