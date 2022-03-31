@@ -12,7 +12,7 @@
 
     <properties>
         <!-- Spring 的版本-->
-        <spring.version>5.0.8.RELEASE</spring.version>
+        <spring.version>5.3.18</spring.version>
 
         <!-- shiro 的版本-->
         <shiro.version>1.5.2</shiro.version>
